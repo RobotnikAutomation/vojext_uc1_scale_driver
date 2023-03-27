@@ -74,7 +74,9 @@ class scaleDriver(RComponent):
         self.send_string_tcp = rospy.Service('~send_string', SetString, self.send_string_cb)
         self.read_string_tcp = rospy.Service('~read_string', Trigger, self.read_string_cb)
         self.open_socket_tcp = rospy.Service('~open_connection', Trigger, self.open_connection_cb)
+        self.close_socket_tcp = rospy.Service('~close_connection', Trigger, self.close_connection_cb)
         self.read_weight = rospy.Service('~read_weight', getWeight, self.read_weight_cb)
+        self.tare_machine = rospy.Service('~tare_machine', Trigger, self.tare_machine_cb)
 
 
         return 0
@@ -154,6 +156,12 @@ class scaleDriver(RComponent):
         return response
 
 
+    def close_connection_cb(self,msg):
+        response = TriggerResponse()
+        response.success = self.close_socket_lock()
+        return response
+
+
     def open_connection_cb(self,msg):
         response = TriggerResponse()
         response.success = self.open_socket_lock()
@@ -180,7 +188,9 @@ class scaleDriver(RComponent):
             self.write_socket_lock(self.tareMachine_msg)
             data1 = self.read_socket_lock()
             data2 = self.read_socket_lock()
-            if data1 == "w0" and data2 == "w5":        
+            data= data1+data2
+            response.message = data.replace("\n", " ").replace("\r", " ")
+            if (data.find(self.executed_msg) != -1 and data.find(self.executed_msg) != -1):        
                 response.success = True
             else:
                 response.success = False
@@ -242,9 +252,11 @@ class scaleDriver(RComponent):
 
 
     def set_timeout_lock(self, value):
+        self.lock.acquire()
         try:
             self.sock.settimeout(value)
             response = True
         except:
             response = False
+        self.lock.release()
         return response
