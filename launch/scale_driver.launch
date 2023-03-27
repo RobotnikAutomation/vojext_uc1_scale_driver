@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- Set namespace -->
+	<!--arg name="id_robot" default="robot"/-->
+
+	<!-- Desired frequency -->
+	<arg name="desired_freq" default="5.0" />
+	<!-- Name of the example of a subscriber -->
+	<arg name="example_subscriber_name" default="example" />
+	<!-- Desired robot IP -->
+	<arg name="server_ip" default="10.60.0.102" />
+	<!-- Desired robot port -->
+	<arg name="server_port" default = "1433" />
+
+	<!-- Load .yaml example -->
+	<rosparam file="$(find scale_driver)/config/example.yaml" command="load" />
+
+	<!--group ns="$(arg id_robot)"-->
+
+		<!-- start sirLifterDriver node -->
+		<node name="scale_driver" pkg="scale_driver" type="scale_tcp_ip_node.py" output="screen" respawn="false">
+			<param name="desired_freq" value="$(arg desired_freq)"/>
+			<param name="example_subscriber_name" value="$(arg example_subscriber_name)"/>
+			<param name="server_ip" value="$(arg server_ip)"/>
+			<param name="server_port" value="$(arg server_port)"/>
+		</node>
+
+	<!--/group-->
+
+</launch>
