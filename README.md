@@ -1,16 +1,23 @@
-# scale_driver
+# TCP-IP communication scale driver
 
 ROS driver for UC1 PEMU scale 
 
 ## TCP-IP address
 
-test punching machine
-scale      IP = '10.60.0.102'
-           PORT = 1433
+### Parameters
+	<!-- Desired scale IP -->
+	<arg name="server_ip" default="10.60.0.102" />
+	<!-- Desired port -->
+	<arg name="server_port" default = "1433" />
+           
 
-### msgs
-
+### Fixed msgs
         readWeight_msg = b"q%\r\n"
         tareMachine_msg = b"q\"\r\n"
 
+## Services
 
+        ~read_weight (getWeight)
+        ~send_string (robotnik_msg/SetString)
+        ~read_string (std_srvs/Trigger)
+        ~open_connection (std_srvs/Trigger)
