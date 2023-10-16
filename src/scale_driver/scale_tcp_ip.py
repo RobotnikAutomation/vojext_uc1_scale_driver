@@ -172,6 +172,8 @@ class scaleDriver(RComponent):
         response = getWeightResponse()
         try:
             self.write_socket_lock(self.readWeight_msg)
+            # Perform read twice, to get rid of outdated info
+            data = self.read_socket_lock()
             data = self.read_socket_lock()
             dataSplit = data.split()
             response.status = dataSplit[0]
