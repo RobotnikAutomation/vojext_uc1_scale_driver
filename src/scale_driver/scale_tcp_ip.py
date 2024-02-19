@@ -108,7 +108,6 @@ class scaleDriver(RComponent):
 
 
     def shutdown(self):
-        self.close_modbus_lock()
         """Shutdowns device
         Return:
             0 : if it's performed successfully
@@ -168,34 +167,48 @@ class scaleDriver(RComponent):
         return response
 
 
-    def read_weight_cb(self, msg):
+    def read_weight_cb(self, msg):                
+        rospy.loginfo("read_weight_cb called")
         response = getWeightResponse()
-        try:
-            self.write_socket_lock(self.readWeight_msg)
-            data = self.read_socket_lock()
-            dataSplit = data.split()
-            response.status = dataSplit[0]
-            response.weight = float(dataSplit[1].replace("kg", "").replace(",","."))
-            response.success = True
-        except:
-            response.success = False
+        response.success = False
+        count = 0
+        loops = 0
+        while (response.success == False or loops < 3):
+            try:
+                rospy.loginfo("read_weight_cb attempt: %d", count)
+                self.write_socket_lock(self.readWeight_msg)
+                data = self.read_socket_lock()
+                dataSplit = data.split()
+                response.status = dataSplit[0]
+                response.weight = float(dataSplit[1].replace("kg", "").replace(",","."))
+                response.success = True
+                rospy.loginfo("Weight: %f", response.weight)
+                loops += 1
+                count = 0
+            except:                
+                response.success = False
+                count += 1
+                if count > 40:
+                    return response
         return response
 
 
     def tare_machine_cb(self, msg):
         response = TriggerResponse()
-        try:
-            self.write_socket_lock(self.tareMachine_msg)
-            data1 = self.read_socket_lock()
-            data2 = self.read_socket_lock()
-            data= data1+data2
-            response.message = data.replace("\n", " ").replace("\r", " ")
-            if (data.find(self.executed_msg) != -1 and data.find(self.executed_msg) != -1):        
-                response.success = True
-            else:
+        response.success = False
+        while (response.success == False):
+            try:
+                self.write_socket_lock(self.tareMachine_msg)
+                data1 = self.read_socket_lock()
+                data2 = self.read_socket_lock()
+                data= data1+data2
+                response.message = data.replace("\n", " ").replace("\r", " ")
+                if (data.find(self.executed_msg) != -1 and data.find(self.executed_msg) != -1):        
+                    response.success = True
+                else:
+                    response.success = False
+            except:
                 response.success = False
-        except:
-            response.success = False
         return response
 
 

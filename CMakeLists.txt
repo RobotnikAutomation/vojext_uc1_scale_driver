@@ -38,6 +38,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS
   LIBRARIES
+    ${PROJECT_NAME}
   CATKIN_DEPENDS
     rospy
     std_msgs
